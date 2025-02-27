@@ -1,8 +1,9 @@
 from config import *
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from decouple import config
 
-application = ApplicationBuilder().token(TOKEN_API_TELEGRAM).build()
+application = ApplicationBuilder().token(config('TOKEN_TELEGRAM_BOT')).build()
 
 async def say_hello(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Hola, ¿cómo estás?")
