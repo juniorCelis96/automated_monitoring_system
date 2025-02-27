@@ -1,0 +1,136 @@
+1. Introducción
+Breve descripción del problema que se está resolviendo.
+
+Objetivo de la solución: Monitorear servidores Linux, notificar alertas por Telegram y permitir consultas sobre el estado actual e histórico de los recursos.
+
+2. Arquitectura de la Solución
+Diagrama de la arquitectura (puedes verlo en la ruta: /images).
+
+Descripción de los componentes principales:
+
+- Agente de Monitoreo(monitoring_agent):
+
+Script en Python que se ejecuta en cada servidor Linux(En un entorno de producción, se debe
+crear o configurar un job o tarea CRON: para que ejecutarse cada 5 minutos.
+Por ej: */5 * * * * /usr/bin/python3 /ruta/completa/script_monitoring.py >> /ruta/completa/logs_script.log 2>&1).
+
+Captura métricas de RAM, CPU y disco.
+
+Envía las métricas al Servicio Centralizado.
+
+- Servicio Centralizado(api_centralized_service):
+
+API REST en Python (usando Flask).
+
+Recibe métricas de los agentes.
+
+Almacena métricas en una base de datos.
+
+Gestiona notificaciones y las envía a Telegram.
+
+- Base de Datos(PostgreSQL / Local):
+
+Almacena servidores, métricas y notificaciones.
+
+Estructura normalizada con tablas para servidores, métricas y notificaciones.
+
+Para desplegar, se puede en un entorno AWS, creando una instancia de base de datos tipo PostgreSQL en RDS, El
+servicio Relational Database Service
+
+- Bot de Telegram(api_chat_bot_telegram):
+
+Desarrollado en Python usando la librería python-telegram-bot.
+
+Permite consultar el estado actual y el histórico de notificaciones.
+
+*Permite ejecutar acciones correctivas (por ejemplo, reiniciar un servicio) - Oportunidad de mejor por tiempo.
+
+- Servicio de Notificaciones:
+
+Parte del Servicio Centralizado(api_chat_bot_telegram).
+
+Envía alertas a un grupo de Telegram cuando se superan los umbrales.
+
+3. Flujo de Trabajo
+Monitoreo:
+
+Los agentes capturan métricas cada 5 minutos y las envían al Servicio Centralizado.
+
+Almacenamiento:
+
+El Servicio Centralizado almacena las métricas en la base de datos.
+
+Notificaciones:
+
+Si se supera el umbral del 75%, se envía una alerta a Telegram.
+
+Consultas:
+
+Los usuarios pueden consultar el estado actual y el histórico de notificaciones a través del Bot de Telegram.
+
+4. Tecnologías Utilizadas
+Lenguaje de programación: Python.
+
+Librerías:
+
+psutil: Para capturar métricas del sistema.
+
+python-telegram-bot: Para interactuar con la API de Telegram.
+
+Flask: Para desarrollar el Servicio Centralizado.
+
+requests: Para hacer solicitudes HTTP.
+
+Base de datos: PostgreSQL.
+
+Despliegue:
+
+Se encuentra actualmente en un entorno local, pero una base idonea sería.
+
+Servidores Linux para los agentes de monitoreo.
+
+Servidor para el Servicio Centralizado y la base de datos.
+
+Bot de Telegram alojado en el mismo servidor o en un servidor separado.
+
+5. Estrategia de Despliegue
+Agentes de Monitoreo:
+
+Instalados en cada servidor Linux.
+
+Ejecutados como servicios o cron jobs.
+
+Servicio Centralizado:
+
+Desplegado en un servidor con acceso a la base de datos y a Internet.
+
+Configurado para manejar múltiples agentes y solicitudes simultáneas.
+
+Bot de Telegram:
+
+Alojado en el mismo servidor que el Servicio Centralizado o en un servidor separado.
+
+Base de Datos:
+
+Alojada en un servidor seguro, accesible solo para el Servicio Centralizado.
+
+6. Consideraciones de Seguridad
+Conexiones SSH: Usar claves SSH para conexiones remotas.
+
+Tokens de Telegram: Almacenar de manera segura los tokens del Bot.
+
+Acceso a la base de datos: Restringir el acceso solo al Servicio Centralizado.
+
+7. Escalabilidad
+Agentes de Monitoreo: Pueden agregarse más servidores sin afectar el sistema.
+
+Servicio Centralizado: Diseñado para manejar múltiples agentes y solicitudes.
+
+Base de Datos: Puede escalarse verticalmente (mejor hardware) o horizontalmente (réplicas).
+
+8. Mejoras Futuras
+Paginación: Para el histórico de notificaciones si la lista es muy larga.
+
+Más acciones correctivas: Permitir reiniciar servicios, liberar memoria, etc.
+
+Dashboard: Implementar una interfaz gráfica para visualizar métricas en tiempo real.
